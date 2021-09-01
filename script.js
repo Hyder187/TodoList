@@ -1,10 +1,5 @@
 "use strict";
 
-const todoListItem = {
-  text: "Play football",
-  status: 0,
-};
-
 const localData = JSON.parse(window.localStorage.getItem("todo"));
 console.log("array", localData);
 
@@ -21,7 +16,7 @@ const generateHtmlBlock = (text, status, index) => {
   <li>
   <div class="todo--item">
     <div class="todo--content" data-item-no="${index}">
-      <div class="icon--text">
+      <div class="icon--text  ${status === 1 ? "checked" : ""}">
         <div class="checked--icon">
           <img
             src="./imgs/check-icon.svg"
@@ -78,8 +73,9 @@ const render = () => {
 
 render();
 
-//LISTENERS
 const checkedIcon = document.querySelector(".todo--list");
+
+//LISTENERS
 
 //Listening for check todo and delete todo usiing event delegation
 checkedIcon.addEventListener("click", function (e) {
@@ -91,7 +87,7 @@ checkedIcon.addEventListener("click", function (e) {
     // handleDeleteEvents();
     handleDelete(todoIcon.parentElement);
   }
-  if (todoIcon.className !== "checked--icon")
+  if (!todoIcon.classList.contains("checked--icon"))
     //guard statement
     return;
 
