@@ -184,19 +184,17 @@ body {
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  width: 90%;
 
   p {
-    width: 90%;
     margin-left: 10px;
     font-size: 2em;
 
     @include tablet {
       font-size: 1.5em;
-      width: 85%;
     }
     @include mobile() {
       font-size: 1em;
-      width: 80%;
     }
   }
 }
