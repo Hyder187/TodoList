@@ -41,7 +41,7 @@ const generateHtmlBlock = (text, status, index) => {
 const handleDelete = (listItem) => {
   console.log("delete called");
   const todoNo = +listItem.dataset.itemNo;
-  todoLists.splice(todoNo, todoNo);
+  todoLists.splice(todoNo, 1);
   window.localStorage.clear();
   window.localStorage.setItem("todo", JSON.stringify(todoLists));
 
