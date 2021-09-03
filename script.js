@@ -1,7 +1,6 @@
 "use strict";
 
 const localData = JSON.parse(window.localStorage.getItem("todo"));
-console.log("array", localData);
 
 let todoLists = [];
 
@@ -16,7 +15,7 @@ const generateHtmlBlock = (text, status, index) => {
   <li>
   <div class="todo--item">
     <div class="todo--content" data-item-no="${index}">
-      <div class="icon--text  ${status === 1 ? "checked" : ""}">
+      <div class="icon--text  ${status ? "checked" : ""}">
         <div class="checked--icon">
           <img
             src="./imgs/check-icon.svg"
@@ -37,11 +36,16 @@ const generateHtmlBlock = (text, status, index) => {
     `;
 };
 
+const handleLastSeparator = () => {
+  const lastItemContainer = todoListContainer.lastElementChild;
+  if (!lastItemContainer) return;
+  const lastItemSeparator = lastItemContainer.querySelector(".separator");
+  lastItemSeparator.classList.toggle("hidden");
+};
+
 //removes todo
-const handleDelete = (listItem) => {
-  console.log("delete called");
-  const todoNo = +listItem.dataset.itemNo;
-  todoLists.splice(todoNo, 1);
+const handleDelete = (index) => {
+  todoLists.splice(index, 1);
   window.localStorage.clear();
   window.localStorage.setItem("todo", JSON.stringify(todoLists));
 
@@ -49,26 +53,40 @@ const handleDelete = (listItem) => {
   render();
 };
 
+const generateId = () => {
+  return Math.random().toString(36).substr(2, 9);
+};
+
 //creates todo
 const createTodo = (todoText) => {
-  todoLists.push({ text: todoText, status: 0 });
+  handleLastSeparator();
+  const uniqueId = generateId();
+  todoLists.push({ text: todoText, status: false, id: uniqueId });
   window.localStorage.clear();
   window.localStorage.setItem("todo", JSON.stringify(todoLists));
 
-  const markup = generateHtmlBlock(todoText, 0, todoLists.length - 1);
+  console.log(todoLists);
+  const markup = generateHtmlBlock(todoText, false, uniqueId);
   todoListContainer.insertAdjacentHTML("beforeend", markup);
+  handleLastSeparator();
+};
+
+const findTodoIndex = (id) => {
+  for (const [i, todo] of todoLists.entries()) {
+    if (todo.id === id) return i;
+  }
 };
 
 //Renders todo items based on html generated
 const render = () => {
-  console.log(todoLists);
   let html = "";
 
   todoLists.forEach((todo, index) => {
-    html += generateHtmlBlock(todo.text, todo.status, index);
+    html += generateHtmlBlock(todo.text, todo.status, todo.id);
   });
 
   todoListContainer.insertAdjacentHTML("afterbegin", html);
+  handleLastSeparator();
 };
 
 render();
@@ -77,42 +95,33 @@ const checkedIcon = document.querySelector(".todo--list");
 
 //LISTENERS
 
-//Listening for check todo and delete todo usiing event delegation
+//Listening for check todo and delete todo using event delegation
 checkedIcon.addEventListener("click", function (e) {
   let todoIcon = e.target;
-  if (todoIcon.classList.contains("checked-icon-image")) {
-    todoIcon = e.target.parentElement;
-    console.log(todoIcon);
-  } else if (todoIcon.className === "trash_img") {
-    // handleDeleteEvents();
-    handleDelete(todoIcon.parentElement);
-  }
-  if (!todoIcon.classList.contains("checked--icon"))
-    //guard statement
-    return;
 
-  //getting properties to manipulate
   const iconText = todoIcon.closest(".icon--text");
-  const todoText = iconText.querySelector(".todo--text");
-  const iconTick = iconText.querySelector(".checked-icon-image");
   const todoContent = todoIcon.closest(".todo--content");
-  const todoNo = +todoContent.dataset.itemNo;
+  const todoId = todoContent.dataset.itemNo;
+  const todoNo = findTodoIndex(todoId);
 
-  //manipulating data on whether todo is checked or not
-  if (todoLists[todoNo].status === 0) {
+  if (todoIcon.classList.contains("checked-icon-image"))
+    todoIcon = e.target.parentElement;
+  else if (todoIcon.className === "trash_img") handleDelete(todoNo);
+
+  if (!todoIcon.classList.contains("checked--icon")) return;
+
+  console.log(todoNo);
+
+  if (!todoLists[todoNo].status) {
     //check todo
-    todoLists[todoNo].status = 1;
-    iconTick.classList.remove("hidden");
-    todoIcon.style.backgroundColor = "#dd9b98";
-    todoIcon.style.border = "none";
-    todoText.style.textDecoration = "line-through";
+
+    todoLists[todoNo].status = true;
+    iconText.classList.add("checked");
   } else {
     //uncheck todo
-    todoLists[todoNo].status = 0;
-    iconTick.classList.add("hidden");
-    todoIcon.style.backgroundColor = "#FFFFFE";
-    todoIcon.style.border = "solid 2px #32414f";
-    todoText.style.textDecoration = "none";
+
+    todoLists[todoNo].status = false;
+    iconText.classList.remove("checked");
   }
 });
 
@@ -122,6 +131,5 @@ addTodoButton.addEventListener("click", function (e) {
   const todoText = todoTextContainer.value;
 
   createTodo(todoText);
-
   todoTextContainer.value = "";
 });

@@ -202,7 +202,7 @@ body {
 .checked {
   div {
     background-color: $background-color;
-    border: none;
+    border: solid 2px $background-color;
   }
   p {
     text-decoration: line-through;
